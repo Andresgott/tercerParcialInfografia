@@ -4,17 +4,14 @@ import cv2
 import numpy as np
 from colorsDictionary import COLOR_RANGES
 
-def apply_color_filter(frame, color_name):
-    # Convertir el frame a espacio de color HSV
+def apply_color_filter(frame, color_names):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    combined_mask = None
 
-    # Obtener rangos HSV del color seleccionado
-    lower, upper = COLOR_RANGES[color_name]
-    lower_np = np.array(lower, dtype=np.uint8)
-    upper_np = np.array(upper, dtype=np.uint8)
+    for color_name in color_names:
+        lower, upper = COLOR_RANGES[color_name]
+        mask = cv2.inRange(hsv, np.array(lower, dtype=np.uint8), np.array(upper, dtype=np.uint8))
+        combined_mask = mask if combined_mask is None else cv2.bitwise_or(combined_mask, mask)
 
-    # Crear máscara y aplicarla al frame original
-    mask = cv2.inRange(hsv, lower_np, upper_np)
-    result = cv2.bitwise_and(frame, frame, mask=mask)
-
+    result = cv2.bitwise_and(frame, frame, mask=combined_mask)
     return result
